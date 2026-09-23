@@ -80,7 +80,18 @@ driver_repo = MockDriverRepo()
 customer_repo = MockCustomerRepo()
 user_repo = MockUserRepo(customer_repo, admin_repo, driver_repo)
 
-service = UserService(user_repo, admin_repo, driver_repo, customer_repo)
+class FakeGeocoder:
+    """Stands in for Google. Returns coordinates, and raises TypeError for an
+    address it does not know, which is the contract the service depends on."""
+
+    KNOWN = {"lat": 48.05089, "lng": -1.74203}
+
+    def geocoding_address(self, address: str) -> dict:
+        if not address or "unknown" in str(address).lower():
+            raise TypeError(f"The address: {address} is not found.")
+        return dict(self.KNOWN)
+
+service = UserService(user_repo, admin_repo, driver_repo, customer_repo, geocoder=FakeGeocoder())
 
 
 user_repo.create_user(

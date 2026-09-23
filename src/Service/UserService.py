@@ -29,11 +29,17 @@ class UserService:
         admin_repo: AdministratorDAO,
         driver_repo: DeliveryDriverDAO,
         customer_repo: CustomerDAO,
+        geocoder: Optional[GoogleMap] = None,
     ):
         self.user_repo = user_repo
         self.admin_repo = admin_repo
         self.driver_repo = driver_repo
         self.customer_repo = customer_repo
+        # Injected, the way DeliveryService already takes it. Creating a
+        # customer validates their address by geocoding it, so a service that
+        # reaches out and builds its own client cannot be tested without a
+        # network call and a paid key.
+        self.geocoder = geocoder or google_service
 
     def create_user(
         self,
@@ -119,7 +125,7 @@ class UserService:
                 )
             )
             try:
-                google_service.geocoding_address(address)
+                self.geocoder.geocoding_address(address)
             except TypeError as e:
                 self.delete_user(username)
                 raise ValueError("Address not valid.") from e

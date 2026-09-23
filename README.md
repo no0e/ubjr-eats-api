@@ -85,6 +85,11 @@ What this repository changes:
 - `DBConnector` read `config["port"]` from a key spelled `"post"`, so passing
   an explicit config raised `KeyError` and only the environment path worked;
 - a failed query printed `ERROR` to stdout and re-raised; it now logs;
+- `UserService` built its own Google client and geocoded an address inside
+  `create_user`, so creating a user needed a network call and a paid key, and
+  two service tests could not run without one. It now takes the geocoder by
+  injection, the way `DeliveryService` already did, and those tests pass a
+  fake. Moving the key out of the source is what made this visible;
 - `requirements.txt` was a full freeze of a development environment, 185 lines
   including an AWS client and a database migration tool that nothing imports.
   It is now the eleven packages the code actually uses;

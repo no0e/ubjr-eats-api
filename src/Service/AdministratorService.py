@@ -5,6 +5,7 @@ from src.DAO.CustomerDAO import CustomerDAO
 from src.DAO.DeliveryDriverDAO import DeliveryDriverDAO
 from src.DAO.UserDAO import UserDAO
 from src.Model.User import User
+from src.Service.GoogleMapService import GoogleMap
 from src.Service.PasswordService import check_password_strength, create_salt, hash_password
 from src.Service.UserService import UserService
 
@@ -18,11 +19,13 @@ class AdministratorService:
         admin_repo: AdministratorDAO,
         driver_repo: DeliveryDriverDAO,
         customer_repo: CustomerDAO,
+        geocoder: Optional[GoogleMap] = None,
     ):
         self.user_repo = user_repo
         self.admin_repo = admin_repo
         self.driver_repo = driver_repo
         self.customer_repo = customer_repo
+        self.geocoder = geocoder
 
     def create_user(self, username: str, firstname: str, lastname: str, password: str, account_type: str) -> User:
         """Function that creates a user from its attributes.
@@ -45,7 +48,10 @@ class AdministratorService:
         User
             Returns the user that has been created.
         """
-        return UserService(self.user_repo, self.admin_repo, self.driver_repo, self.customer_repo).create_user(
+        return UserService(
+            self.user_repo, self.admin_repo, self.driver_repo,
+            self.customer_repo, geocoder=self.geocoder,
+        ).create_user(
             username=username,
             firstname=firstname,
             lastname=lastname,
