@@ -1,0 +1,73 @@
+[project]
+name = "ubjr-eats-api"
+version = "0.1.0"
+description = "A delivery platform backend: FastAPI over a layered architecture"
+authors = [
+    {name = "Noe Diette"},
+    {name = "Justine Oliviero"},
+    {name = "Tristan Talbot"},
+    {name = "Emma Glorieux"},
+]
+dependencies = [
+    "fastapi>=0.116.1",
+    "uvicorn>=0.35.0",
+    "pydantic>=2.11.7",
+    "PyJWT>=2.10.1",
+    "psycopg2-binary>=2.9.10",
+    "python-dotenv>=1.1.1",
+    "requests>=2.32.5",
+    "faker>=38.2.0",
+]
+requires-python = "==3.12.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+[tool.pytest.ini_options]
+addopts = "-ra -q"
+pythonpath = [ "."] 
+testpaths = [
+    "tests",
+]
+
+
+[tool.pdm]
+distribution = false
+
+
+[tool.pdm.scripts]
+lint = "ruff check"
+format = "ruff format"
+test = "pytest tests --cov=src"
+start = "pdm run __main__.py"
+reset = "pdm run python -m  src.Utils.reset_db"
+typecheck = "pyrefly check"
+install = "pdm install requirements.txt"
+filldatabase = "python -m src.Utils.FillTestDatabase"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "I", "A", "C90", "PERF", "TCH", "TID"]
+
+[tool.pyrefly]
+project-includes = ["src/**/*"]
+project-excludes = ['**/*venv/**\*']
+search_path = [
+    "."
+]
+
+[dependency-groups]
+test = [
+    "pytest>=8.4.1",
+    "pytest-cov>=5.0.0",
+    "freezegun>=1.5.5",
+]
+lint = [
+    "ruff>=0.12.11",
+]
+typing = [
+    "types-requests>=2.32.4.20250809",
+    "types-psycopg2>=2.9.21.20250809",
+    "pyrefly>=0.30.0",
+]

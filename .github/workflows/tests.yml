@@ -1,0 +1,47 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+
+    # The DAO tests talk to a real PostgreSQL rather than a mock, which is the
+    # point of having them: they check the SQL, and a mocked cursor checks the
+    # mock. So CI brings a database up beside them.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ubjr
+          POSTGRES_PASSWORD: ubjr
+          POSTGRES_DB: ubjr
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_DATABASE: ubjr
+      POSTGRES_USER: ubjr
+      POSTGRES_PASSWORD: ubjr
+      POSTGRES_SCHEMA: project_test_database
+      JWT_SECRET: not-a-real-secret-for-ci-only
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Create the schemas and load the fixtures
+        run: python -c "from src.Utils.reset_db import ResetDatabase; ResetDatabase().launch(); ResetDatabase().launch(True)"
+      - run: python -m pytest tests/ -q
